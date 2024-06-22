@@ -1,3 +1,5 @@
+import 'package:tv_series_app/features/home_feature/routes/home_route.dart';
+
 class SeriesRoutes {
   static const String moduleRoute = '/series_module';
   static const String tvSeriesRoute = '/tv_series';
@@ -11,11 +13,11 @@ class SeriesNavigation {
   static const String tvSeries =
       SeriesRoutes.moduleRoute + SeriesRoutes.tvSeriesRoute;
   static const String searchSeries =
-      SeriesRoutes.moduleRoute + SeriesRoutes.searchSeriesRoute;
+      HomeRoutes.moduleRoute + SeriesRoutes.moduleRoute + SeriesRoutes.searchSeriesRoute;
   static const String seriesDetail =
-      SeriesRoutes.moduleRoute + SeriesRoutes.seriesDetailRoute;
+      HomeRoutes.moduleRoute + SeriesRoutes.moduleRoute + SeriesRoutes.seriesDetailRoute;
   static const String episodeDetail =
-      SeriesRoutes.moduleRoute + SeriesRoutes.episodeDetailRoute;
+      HomeRoutes.moduleRoute + SeriesRoutes.moduleRoute + SeriesRoutes.episodeDetailRoute;
   static const String favoriteSeries =
-      SeriesRoutes.moduleRoute + SeriesRoutes.favoriteSeriesRoute;
+      HomeRoutes.moduleRoute + SeriesRoutes.moduleRoute + SeriesRoutes.favoriteSeriesRoute;
 }
