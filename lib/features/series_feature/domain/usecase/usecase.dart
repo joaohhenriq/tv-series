@@ -1,0 +1,9 @@
+export 'add_favorite_series.dart';
+export 'delete_from_favorite_series.dart';
+export 'get_episodes_by_series_id.dart';
+export 'get_favorite_series.dart';
+export 'get_series_list_items.dart';
+export 'get_tv_series_by_name.dart';
+export 'get_tv_series_by_page.dart';
+export 'group_episodes_by_season.dart';
+export 'is_series_favorite.dart';

@@ -1,0 +1,1 @@
+export 'favorite_series_singleton.dart';
