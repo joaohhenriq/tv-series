@@ -1,4 +1,5 @@
 import 'package:tv_series_app/features/series_feature/series_feature.dart';
+import 'package:tv_series_app/features_util/helpers/helpers.dart';
 
 class EpisodeModel extends EpisodeEntity {
   const EpisodeModel({
@@ -12,16 +13,16 @@ class EpisodeModel extends EpisodeEntity {
   });
 
   factory EpisodeModel.fromMap(Map<String, dynamic> map) => EpisodeModel(
-    id: map['id'] ?? 0,
-    name: map['name'] ?? '',
-    number: map['number'] ?? 0,
-    season: map['season'] ?? 0,
-    summary: map['summary'] ?? '',
-    mediumImage: map['image'] != null && map['image']['medium'] != null
-        ? map['image']['medium']
-        : '',
-    originalImage: map['image'] != null && map['image']['original'] != null
-        ? map['image']['original']
-        : '',
-  );
+        id: map['id'] ?? 0,
+        name: map['name'] ?? '',
+        number: map['number'] ?? 0,
+        season: map['season'] ?? 0,
+        summary: Helpers.removeHtmlFromString(map['summary'] ?? ''),
+        mediumImage: map['image'] != null && map['image']['medium'] != null
+            ? map['image']['medium']
+            : '',
+        originalImage: map['image'] != null && map['image']['original'] != null
+            ? map['image']['original']
+            : '',
+      );
 }
