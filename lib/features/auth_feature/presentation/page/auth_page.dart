@@ -40,17 +40,29 @@ class _AuthPageState extends State<AuthPage> {
             case AuthStateEnum.initial:
               return const Center(child: CircularProgressIndicator());
             case AuthStateEnum.createPin:
-              return CreatePin(
-                loadingButton: provider.createPinLoadingButton,
+              return PinHandlerWidget(
+                description:
+                    'Please, create a pin with 4 numbers to access Tv Maze',
+                buttonDescription: 'Create',
+                loadingButton: provider.pinLoadingButton,
                 onTap: (String pin) => _setPin(
                   context: context,
                   pin: pin,
-                  updateCreatePinLoadingButton:
-                      provider.updateCreatePinLoadingButton,
+                  updatePinLoadingButton: provider.updatePinLoadingButton,
                 ),
               );
             case AuthStateEnum.confirmPin:
-              return Container();
+              return PinHandlerWidget(
+                description:
+                    'Please, enter your pin with 4 numbers to access Tv Maze',
+                buttonDescription: 'Check',
+                loadingButton: provider.pinLoadingButton,
+                onTap: (String pin) => _checkPin(
+                  context: context,
+                  pin: pin,
+                  updatePinLoadingButton: provider.updatePinLoadingButton,
+                ),
+              );
           }
         }),
       );
@@ -69,23 +81,54 @@ class _AuthPageState extends State<AuthPage> {
   Future<bool> _setPin({
     required BuildContext context,
     required String pin,
-    required void Function(bool) updateCreatePinLoadingButton,
+    required void Function(bool) updatePinLoadingButton,
   }) async {
-    updateCreatePinLoadingButton(true);
+    updatePinLoadingButton(true);
     final result = await widget.setPin(pin);
-    updateCreatePinLoadingButton(false);
-    if (result.isRight) {
+    updatePinLoadingButton(false);
+    if (result.isRight && result.right) {
       return true;
     }
 
-    if(context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ops, something went wrong!. Please, try again.'),
-          backgroundColor: Colors.red,
-        ),
+    if (context.mounted) {
+      _callSnackbarError(
+        context: context,
+        message: 'Ops, something went wrong!. Please, try again.',
       );
     }
     return false;
+  }
+
+  Future<bool> _checkPin({
+    required BuildContext context,
+    required String pin,
+    required void Function(bool) updatePinLoadingButton,
+  }) async {
+    updatePinLoadingButton(true);
+    final result = await widget.checkPin(pin);
+    updatePinLoadingButton(false);
+    if (result.isRight && result.right) {
+      return true;
+    }
+
+    if (context.mounted) {
+      _callSnackbarError(
+        context: context,
+        message: 'Ops, the pin entered is incorrect. Please, try again.',
+      );
+    }
+    return false;
+  }
+
+  void _callSnackbarError({
+    required BuildContext context,
+    required String message,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 }

@@ -9,15 +9,15 @@ enum AuthStateEnum {
 class AuthState extends ChangeNotifier {
   AuthStateEnum authStateEnum = AuthStateEnum.initial;
 
-  bool createPinLoadingButton = false;
+  bool pinLoadingButton = false;
 
   updateAuthState(AuthStateEnum authStateEnum) {
     this.authStateEnum = authStateEnum;
     notifyListeners();
   }
 
-  updateCreatePinLoadingButton(bool loadingButton) {
-    createPinLoadingButton = loadingButton;
+  updatePinLoadingButton(bool loadingButton) {
+    pinLoadingButton = loadingButton;
     notifyListeners();
   }
 }

@@ -3,31 +3,35 @@ import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:tv_series_app/features/home_feature/routes/home_route.dart';
 
-class CreatePin extends StatefulWidget {
-  const CreatePin({
+class PinHandlerWidget extends StatefulWidget {
+  const PinHandlerWidget({
     super.key,
     required this.loadingButton,
+    required this.description,
+    required this.buttonDescription,
     required this.onTap,
   });
 
   final bool loadingButton;
+  final String description;
+  final String buttonDescription;
   final Future<bool> Function(String) onTap;
 
   @override
-  State<CreatePin> createState() => _CreatePinState();
+  State<PinHandlerWidget> createState() => _PinHandlerWidgetState();
 }
 
-class _CreatePinState extends State<CreatePin> {
+class _PinHandlerWidgetState extends State<PinHandlerWidget> {
   final controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) => ListView(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(20.0),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
             child: Text(
-              'Please, create a pin with 4 numbers to access Tv Maze',
-              style: TextStyle(
+              widget.description,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -73,9 +77,9 @@ class _CreatePinState extends State<CreatePin> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF525557),
                     ),
-                    child: const Text(
-                      'Add',
-                      style: TextStyle(color: Colors.white),
+                    child: Text(
+                      widget.buttonDescription,
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ],
@@ -88,6 +92,7 @@ class _CreatePinState extends State<CreatePin> {
   Future<void> _onTapButton(String pin) async {
     if(widget.loadingButton) return;
     if(pin.length != 4) return;
+    FocusScope.of(context).unfocus();
     final result = await widget.onTap(pin);
     if(result) Modular.to.navigate(HomeNavigation.homeOptions);
   }
