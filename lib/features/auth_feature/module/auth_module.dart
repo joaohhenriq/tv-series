@@ -6,20 +6,30 @@ import 'package:tv_series_app/features_core/auth/auth.dart';
 
 class AuthModule extends Module {
   @override
-  List<Module> get imports => [PinModule()];
+  List<Module> get imports => [PinModule(), BiometricModule()];
 
   @override
   void binds(Injector i) {
     // data sources
-    i.add<AuthDataSource>(() => AuthDataSourceImpl(i.get()));
+    i.add<AuthPinDataSource>(() => AuthPinDataSourceImpl(i.get()));
+    i.add<AuthBiometricDataSource>(() => AuthBiometricDataSourceImpl(i.get()));
 
     // repositories
-    i.add<AuthRepository>(() => AuthRepositoryImpl(i.get()));
+    i.add<AuthRepository>(() => AuthRepositoryImpl(
+          datasource: i.get(),
+          biometricDataSource: i.get(),
+        ));
 
     // use cases
     i.add<CheckPin>(() => CheckPinImpl(i.get()));
     i.add<IsPinSet>(() => IsPinSetImpl(i.get()));
     i.add<SetPin>(() => SetPinImpl(i.get()));
+    i.add<AllowBiometricAuth>(() => AllowBiometricAuthImpl(i.get()));
+    i.add<IsBiometricAuthAllowed>(() => IsBiometricAuthAllowedImpl(i.get()));
+    i.add<AuthenticateBiometric>(() => AuthenticateBiometricImpl(i.get()));
+    i.add<GetAvailableBiometrics>(() => GetAvailableBiometricsImpl(i.get()));
+    i.add<IsBiometricLoginForDeviceSupported>(
+        () => IsBiometricLoginForDeviceSupportedImpl(i.get()));
   }
 
   @override
@@ -32,6 +42,11 @@ class AuthModule extends Module {
           isPinSet: Modular.get(),
           setPin: Modular.get(),
           checkPin: Modular.get(),
+          allowBiometricAuth: Modular.get(),
+          isBiometricAuthAllowed: Modular.get(),
+          authenticateBiometric: Modular.get(),
+          getAvailableBiometrics: Modular.get(),
+          isBiometricLoginForDeviceSupported: Modular.get(),
         ),
       ),
     );

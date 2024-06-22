@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:local_auth/local_auth.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:provider/provider.dart';
 import 'package:tv_series_app/features/auth_feature/auth_feature.dart';
+import 'package:tv_series_app/features/home_feature/home_feature.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({
@@ -9,33 +10,39 @@ class AuthPage extends StatefulWidget {
     required this.isPinSet,
     required this.setPin,
     required this.checkPin,
+    required this.allowBiometricAuth,
+    required this.isBiometricAuthAllowed,
+    required this.authenticateBiometric,
+    required this.getAvailableBiometrics,
+    required this.isBiometricLoginForDeviceSupported,
   });
 
   final IsPinSet isPinSet;
   final SetPin setPin;
   final CheckPin checkPin;
+  final AllowBiometricAuth allowBiometricAuth;
+  final IsBiometricAuthAllowed isBiometricAuthAllowed;
+  final AuthenticateBiometric authenticateBiometric;
+  final GetAvailableBiometrics getAvailableBiometrics;
+  final IsBiometricLoginForDeviceSupported isBiometricLoginForDeviceSupported;
 
   @override
   State<AuthPage> createState() => _AuthPageState();
 }
 
 class _AuthPageState extends State<AuthPage> {
-  late final LocalAuthentication localAuth;
-  bool _supportState = false;
-
   @override
   void initState() {
     super.initState();
-    localAuth = LocalAuthentication();
-    localAuth.isDeviceSupported().then((bool isSupported) => setState(() {
-          _supportState = isSupported;
-        }));
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final provider = context.read<AuthState>();
-      await _fetchPin(
-        updateAuthState: provider.updateAuthState,
+      final provider = ReadContext(context).read<AuthState>();
+      await _fetchPin(updateAuthState: provider.updateAuthState);
+      await _fetchBiometric(
+        updateIsDeviceBiometricSupported:
+            provider.updateIsDeviceBiometricSupported,
+        updateIsDeviceBiometricAuthAllowed:
+            provider.updateIsDeviceBiometricAuthAllowed,
       );
-      await _getAvailableBiometrics();
     });
   }
 
@@ -53,24 +60,36 @@ class _AuthPageState extends State<AuthPage> {
                 description:
                     'Please, create a pin with 4 numbers to access Tv Maze',
                 buttonDescription: 'Create',
+                isDeviceBiometricAuthAllowed:
+                    provider.isDeviceBiometricAuthAllowed,
+                isDeviceBiometricSupported: provider.isDeviceBiometricSupported,
                 loadingButton: provider.pinLoadingButton,
-                onTap: (String pin) => _setPin(
+                onTapButton: (String pin, bool allowBioAuth) => _setPin(
                   context: context,
                   pin: pin,
                   updatePinLoadingButton: provider.updatePinLoadingButton,
+                  allowBioAuth: allowBioAuth,
                 ),
+                onTapCheckBiometric:
+                    provider.updateIsDeviceBiometricAuthAllowed,
               );
             case AuthStateEnum.confirmPin:
               return PinHandlerWidget(
                 description:
                     'Please, enter your pin with 4 numbers to access Tv Maze',
                 buttonDescription: 'Check',
+                isDeviceBiometricAuthAllowed:
+                    provider.isDeviceBiometricAuthAllowed,
+                isDeviceBiometricSupported: provider.isDeviceBiometricSupported,
                 loadingButton: provider.pinLoadingButton,
-                onTap: (String pin) => _checkPin(
+                onTapButton: (String pin, bool allowBioAuth) => _checkPin(
                   context: context,
                   pin: pin,
                   updatePinLoadingButton: provider.updatePinLoadingButton,
+                  allowBioAuth: allowBioAuth,
                 ),
+                onTapCheckBiometric:
+                    provider.updateIsDeviceBiometricAuthAllowed,
               );
           }
         }),
@@ -91,11 +110,13 @@ class _AuthPageState extends State<AuthPage> {
     required BuildContext context,
     required String pin,
     required void Function(bool) updatePinLoadingButton,
+    required bool allowBioAuth,
   }) async {
     updatePinLoadingButton(true);
     final result = await widget.setPin(pin);
     updatePinLoadingButton(false);
     if (result.isRight && result.right) {
+      await widget.allowBiometricAuth(allowBioAuth);
       return true;
     }
 
@@ -112,11 +133,13 @@ class _AuthPageState extends State<AuthPage> {
     required BuildContext context,
     required String pin,
     required void Function(bool) updatePinLoadingButton,
+    required bool allowBioAuth,
   }) async {
     updatePinLoadingButton(true);
     final result = await widget.checkPin(pin);
     updatePinLoadingButton(false);
     if (result.isRight && result.right) {
+      await widget.allowBiometricAuth(allowBioAuth);
       return true;
     }
 
@@ -141,21 +164,52 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  Future<void> _getAvailableBiometrics() async {
-    await localAuth.getAvailableBiometrics();
-    if (!mounted) return;
-    await _authenticate();
+  Future<void> _fetchBiometric({
+    required void Function(bool) updateIsDeviceBiometricSupported,
+    required void Function(bool) updateIsDeviceBiometricAuthAllowed,
+  }) async {
+    bool isSupported = await _isDeviceBiometricSupported(
+      updateIsDeviceBiometricSupported: updateIsDeviceBiometricSupported,
+    );
+    if (isSupported) {
+      await widget.getAvailableBiometrics();
+      bool isAllowed = await _isBiometricAuthAllowed(
+        updateIsDeviceBiometricAuthAllowed: updateIsDeviceBiometricAuthAllowed,
+      );
+      if (isAllowed) {
+        await _authenticateBiometric();
+      }
+    }
   }
 
-  Future<void> _authenticate() async {
-    try {
-      final authenticated = await localAuth.authenticate(
-        localizedReason: 'Authenticate',
-        options: const AuthenticationOptions(stickyAuth: true),
-      );
-      print('********** - $authenticated');
-    } catch (err, stack) {
-      print('Biometrics: authenticate - $err');
+  Future<bool> _isDeviceBiometricSupported({
+    required void Function(bool) updateIsDeviceBiometricSupported,
+  }) async {
+    final isDeviceBiometricSupported =
+        await widget.isBiometricLoginForDeviceSupported();
+    if (isDeviceBiometricSupported.isRight) {
+      updateIsDeviceBiometricSupported(isDeviceBiometricSupported.right);
+      return isDeviceBiometricSupported.right;
+    }
+    return false;
+  }
+
+  Future<bool> _isBiometricAuthAllowed({
+    required void Function(bool) updateIsDeviceBiometricAuthAllowed,
+  }) async {
+    final isBiometricAuthAllowed = await widget.isBiometricAuthAllowed();
+    if (isBiometricAuthAllowed.isRight) {
+      updateIsDeviceBiometricAuthAllowed(isBiometricAuthAllowed.right);
+      return isBiometricAuthAllowed.right;
+    }
+    return false;
+  }
+
+  Future<void> _authenticateBiometric() async {
+    if (!mounted) return;
+    final isAuth = await widget.authenticateBiometric();
+    if (isAuth.isRight && isAuth.right) {
+      Modular.to.navigate(HomeNavigation.homeOptions);
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -7,15 +8,21 @@ class PinHandlerWidget extends StatefulWidget {
   const PinHandlerWidget({
     super.key,
     required this.loadingButton,
+    required this.isDeviceBiometricSupported,
+    required this.isDeviceBiometricAuthAllowed,
     required this.description,
     required this.buttonDescription,
-    required this.onTap,
+    required this.onTapCheckBiometric,
+    required this.onTapButton,
   });
 
   final bool loadingButton;
+  final bool isDeviceBiometricSupported;
+  final bool isDeviceBiometricAuthAllowed;
   final String description;
   final String buttonDescription;
-  final Future<bool> Function(String) onTap;
+  final void Function(bool) onTapCheckBiometric;
+  final Future<bool> Function(String, bool) onTapButton;
 
   @override
   State<PinHandlerWidget> createState() => _PinHandlerWidgetState();
@@ -58,7 +65,10 @@ class _PinHandlerWidgetState extends State<PinHandlerWidget> {
                         ],
                         keyboardType: TextInputType.number,
                         controller: controller,
-                        onSubmitted: (_) => _onTapButton(controller.text),
+                        onSubmitted: (_) => _onTapButton(
+                          controller.text,
+                          widget.isDeviceBiometricAuthAllowed,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Enter your pin',
                           border: OutlineInputBorder(
@@ -73,7 +83,10 @@ class _PinHandlerWidgetState extends State<PinHandlerWidget> {
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: () => _onTapButton(controller.text),
+                    onPressed: () => _onTapButton(
+                      controller.text,
+                      widget.isDeviceBiometricAuthAllowed,
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF525557),
                     ),
@@ -86,14 +99,38 @@ class _PinHandlerWidgetState extends State<PinHandlerWidget> {
               ),
             ),
           ),
+          if (widget.isDeviceBiometricSupported)
+            Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Checkbox(
+                      value: widget.isDeviceBiometricAuthAllowed,
+                      onChanged: (value) =>
+                          widget.onTapCheckBiometric(value ?? false),
+                    ),
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'Allow biometric auth for next authentication',
+                    ),
+                  ),
+                ],
+              ),
+            )
         ],
       );
 
-  Future<void> _onTapButton(String pin) async {
-    if(widget.loadingButton) return;
-    if(pin.length != 4) return;
+  Future<void> _onTapButton(
+    String pin,
+    bool isDeviceBiometricAuthAllowed,
+  ) async {
+    if (widget.loadingButton) return;
+    if (pin.length != 4) return;
     FocusScope.of(context).unfocus();
-    final result = await widget.onTap(pin);
-    if(result) Modular.to.navigate(HomeNavigation.homeOptions);
+    final result = await widget.onTapButton(pin, isDeviceBiometricAuthAllowed);
+    if (result) Modular.to.navigate(HomeNavigation.homeOptions);
   }
 }

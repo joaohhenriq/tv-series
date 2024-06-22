@@ -1,13 +1,13 @@
 import 'package:tv_series_app/features_core/auth/auth.dart';
 
-abstract class AuthDataSource {
+abstract class AuthPinDataSource {
   Future<bool> isPinSet();
   Future<bool> setPin(String pin);
   Future<bool> checkPin(String pin);
 }
 
-class AuthDataSourceImpl implements AuthDataSource {
-  AuthDataSourceImpl(this.pinClient);
+class AuthPinDataSourceImpl implements AuthPinDataSource {
+  AuthPinDataSourceImpl(this.pinClient);
 
   final PinClient pinClient;
 

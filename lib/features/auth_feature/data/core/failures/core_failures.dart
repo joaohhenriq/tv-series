@@ -5,3 +5,13 @@ class IsPinSetFailure extends Failure {}
 class SetPinFailure extends Failure {}
 
 class CheckPinFailure extends Failure {}
+
+class IsBiometricLoginForDeviceSupportedFailure extends Failure {}
+
+class GetAvailableBiometricsFailure extends Failure {}
+
+class AuthenticateBiometricFailure extends Failure {}
+
+class AllowBiometricAuthFailure extends Failure {}
+
+class IsBiometricAuthAllowedFailure extends Failure {}
