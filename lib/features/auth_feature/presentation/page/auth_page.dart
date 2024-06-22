@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:tv_series_app/features/auth_feature/auth_feature.dart';
 
@@ -19,14 +20,22 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
+  late final LocalAuthentication localAuth;
+  bool _supportState = false;
+
   @override
   void initState() {
     super.initState();
+    localAuth = LocalAuthentication();
+    localAuth.isDeviceSupported().then((bool isSupported) => setState(() {
+          _supportState = isSupported;
+        }));
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<AuthState>();
       await _fetchPin(
         updateAuthState: provider.updateAuthState,
       );
+      await _getAvailableBiometrics();
     });
   }
 
@@ -130,5 +139,23 @@ class _AuthPageState extends State<AuthPage> {
         backgroundColor: Colors.red,
       ),
     );
+  }
+
+  Future<void> _getAvailableBiometrics() async {
+    await localAuth.getAvailableBiometrics();
+    if (!mounted) return;
+    await _authenticate();
+  }
+
+  Future<void> _authenticate() async {
+    try {
+      final authenticated = await localAuth.authenticate(
+        localizedReason: 'Authenticate',
+        options: const AuthenticationOptions(stickyAuth: true),
+      );
+      print('********** - $authenticated');
+    } catch (err, stack) {
+      print('Biometrics: authenticate - $err');
+    }
   }
 }

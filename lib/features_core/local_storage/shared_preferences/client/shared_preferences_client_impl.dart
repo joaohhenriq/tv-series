@@ -16,4 +16,18 @@ class SharedPreferencesClientImpl implements SharedPreferencesClient {
     final SharedPreferences instance = await SharedPreferences.getInstance();
     return await instance.setString(key, value);
   }
+
+  @override
+  Future<bool?> getBool(String key) async {
+    debugPrint('******** sharedPreferencesInstance.getBool: $key');
+    final SharedPreferences instance = await SharedPreferences.getInstance();
+    return instance.getBool(key);
+  }
+
+  @override
+  Future<bool> setBool(String key, bool value) async {
+    debugPrint('******** sharedPreferencesInstance.setBool: $key, $value');
+    final SharedPreferences instance = await SharedPreferences.getInstance();
+    return await instance.setBool(key, value);
+  }
 }
