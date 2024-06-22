@@ -28,7 +28,11 @@ class AuthModule extends Module {
       AuthRoutes.authRoute,
       child: (_) => ChangeNotifierProvider(
         create: (_) => AuthState(),
-        child: const AuthPage(),
+        child: AuthPage(
+          isPinSet: Modular.get(),
+          setPin: Modular.get(),
+          checkPin: Modular.get(),
+        ),
       ),
     );
     r.module(HomeRoutes.moduleRoute, module: HomeModule());
