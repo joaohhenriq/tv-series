@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:tv_series_app/features/home_feature/home_feature.dart';
-import 'package:tv_series_app/features/people_feature/people_feature.dart';
-import 'package:tv_series_app/features/series_feature/series_feature.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -36,8 +34,8 @@ class _HomePageState extends State<HomePage> {
       );
 
   void _navigateToTvSeriesSection() =>
-      Modular.to.pushNamed(SeriesNavigation.tvSeries);
+      Modular.to.pushNamed(HomeNavigation.tvSeries);
 
   void _navigateToPeopleSection() =>
-      Modular.to.pushNamed(PeopleNavigation.searchSeries);
+      Modular.to.pushNamed(HomeNavigation.peopleSearch);
 }

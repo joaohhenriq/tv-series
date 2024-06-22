@@ -17,7 +17,7 @@ class PersonDetail extends StatefulWidget {
 class _PersonDetailState extends State<PersonDetail> {
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Episode Detail')),
+    appBar: AppBar(title: const Text('Person Detail')),
     body: SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

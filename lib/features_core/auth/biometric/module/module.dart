@@ -1,0 +1,1 @@
+export 'biometric_module.dart';

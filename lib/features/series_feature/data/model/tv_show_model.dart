@@ -1,4 +1,5 @@
 import 'package:tv_series_app/features/series_feature/series_feature.dart';
+import 'package:tv_series_app/features_util/helpers/helpers.dart';
 
 class TvShowModel extends TvShowEntity {
   const TvShowModel({
@@ -51,7 +52,7 @@ class TvShowModel extends TvShowEntity {
           ? show['schedule']['time']
           : '',
       genres: List<String>.from(show['genres'] ?? []),
-      summary: show['summary'] ?? '',
+      summary: Helpers.removeHtmlFromString(show['summary'] ?? ''),
     );
   }
 
